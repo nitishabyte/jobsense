@@ -11,7 +11,7 @@ CREATE TABLE companies (
 );
 
 CREATE TABLE jobs (
-    job_id            INTEGER PRIMARY KEY,    -- same id that FAISS stores with each vector
+    job_id            INTEGER PRIMARY KEY AUTOINCREMENT,    -- same id that FAISS stores with each vector
     company_id        INTEGER REFERENCES companies(company_id),   -- NULL allowed: some postings have no company id
     title             TEXT    NOT NULL,
     description       TEXT    NOT NULL,
