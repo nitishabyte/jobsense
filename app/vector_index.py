@@ -20,6 +20,16 @@ def add(index: faiss.Index, vectors: np.ndarray, ids) -> None:
     index.add_with_ids(vectors, np.asarray(ids, dtype="int64"))
 
 
+def remove(index: faiss.Index, ids) -> int:
+    """Remove vectors by job_id; returns how many were removed."""
+    return index.remove_ids(np.asarray(ids, dtype="int64"))
+
+
+def ids_in(index: faiss.Index) -> set[int]:
+    """All job_ids currently stored in the index."""
+    return set(faiss.vector_to_array(index.id_map).tolist())
+
+
 def search(index: faiss.Index, query_vector: np.ndarray, k: int) -> list[tuple[int, float]]:
     """Return [(job_id, score), ...] best first. FAISS pads with id -1 if it has fewer than k vectors."""
     scores, ids = index.search(query_vector, k)
