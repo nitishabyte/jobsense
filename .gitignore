@@ -221,6 +221,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-data/
+data/*
+!data/jobs.index
+!data/jobsense.db
 kaggle.json
 

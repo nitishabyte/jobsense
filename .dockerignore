@@ -1,0 +1,9 @@
+.git
+.venv
+**/__pycache__
+data/raw
+data/embeddings.npy
+data/jobs_clean.csv
+evaluation
+scripts
+*.md
