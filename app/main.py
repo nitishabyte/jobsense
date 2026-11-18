@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field, field_validator
 
 from app import db, vector_index
@@ -123,6 +124,12 @@ class JobIn(BaseModel):
 # ---------- Endpoints ----------
 # Plain `def` (not `async def`): embedding and FAISS are CPU work that would block an async event loop.
 # FastAPI runs `def` endpoints in a thread pool instead.
+
+@app.get("/", include_in_schema=False)
+def root():
+    """Visitors opening the bare URL land on the interactive docs instead of a 404."""
+    return RedirectResponse("/docs")
+
 
 @app.get("/health")
 def health():
