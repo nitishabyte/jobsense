@@ -5,6 +5,10 @@ then we measure how often you and the judge agree.
 Usage (from the repo root):
     python -m evaluation.spot_check            # label the sample (resumable: q to quit)
     python -m evaluation.spot_check --report   # show agreement
+
+Round 2 (only the labels added in Step 6):
+    python -m evaluation.spot_check --labels evaluation/labels_round2.json --out evaluation/spot_check_round2.json --n 15
+    (add --report to see agreement)
 """
 import argparse
 import json
@@ -44,9 +48,14 @@ def report(labels: dict, mine: dict) -> None:
 
 
 def main() -> None:
+    global LABELS, CHECK, SAMPLE_SIZE
     p = argparse.ArgumentParser()
     p.add_argument("--report", action="store_true")
+    p.add_argument("--labels", default=str(LABELS), help="which labels to sample from")
+    p.add_argument("--out", default=str(CHECK), help="where your answers are saved")
+    p.add_argument("--n", type=int, default=SAMPLE_SIZE, help="sample size")
     args = p.parse_args()
+    LABELS, CHECK, SAMPLE_SIZE = Path(args.labels), Path(args.out), args.n
 
     labels = json.loads(LABELS.read_text())
     mine = json.loads(CHECK.read_text()) if CHECK.exists() else {}

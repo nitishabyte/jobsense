@@ -47,4 +47,27 @@
 | cooking food in a restaurant kitchen | Seasonal Kitchen Assistant, cooking school (food prep, dishes) | 1 | Kitchen staff doing food prep |
 | helping people buy and sell homes | New Home Consultant (Lennar); Community Sales Manager (Taylor Morrison) | 1 | Selling homes directly to buyers (real-estate sales) |
 | helping people buy and sell homes | Loan Officer ×2; mortgage admin support | 0 | Excluded by the rule |
-Spot check: 1 answer corrected for a mis-keyed entry before viewing the agreement report. Result: 29/30 agreement, Cohen’s κ = 0.93. The one disagreement (n05, job 3902758429) was left with the judge’s label.
+
+Spot check (round 1): 1 answer corrected for a mis-keyed entry before viewing the agreement report. Result: 29/30 agreement, Cohen's κ = 0.93. The one disagreement (n05, job 3902758429) was left with the judge's label.
+
+---
+
+# Round 2 (Step 6: re-ranker)
+
+**Input:** 35 new (query, job) pairs surfaced by `embedding+rerank` that the first two systems had not returned. Same judge, same rules, same policies, still blind to which system found each job.
+**Result:** 25 relevant, 10 not relevant. **Total labels after round 2: 201.**
+
+| Query | Job | Label | Reason |
+|---|---|---|---|
+| tax manager | Resource Manager – Tax (staff scheduling for a tax practice) | 0 | Not a tax accounting role |
+| data analyst SQL | Data Analyst (Japanese): data quality analysis with SQL/Excel/Python | 1 | Analyst work with data |
+| data analyst SQL | Data Integrity Analyst (ERP data cleansing/governance) | 0 | Data management, consistent with round 1's Systems Analyst / Data Modeler |
+| software sales account executive | AE at a B2B marketing/events company; AE selling magazine/media ads | 0 | Not selling software or technology |
+| software sales account executive | AE at a Microsoft Solutions Partner | 1 | Selling technology services |
+| backend role working with AI | "AI/Generative AI Positions" (openings incl. AI/ML engineers) | 1 | ML/AI engineering roles |
+| talking to customers on the phone all day | Receptionist, H&R Block ×2 | 0 | Consistent with round 1 |
+| talking to customers on the phone all day | Technical Sales (4–5 hours of call-center-style cold calling per day) | 1 | Phone conversations are the core of the job |
+| fixing heating and air conditioning | HVAC retail sales manager; HVAC water-treatment chemical testing | 0 | Not HVAC repair/installation |
+| protecting company computers from hackers | Warehouse Coordinator at a cybersecurity company | 0 | Warehouse role |
+| cooking food in a restaurant kitchen | Kitchen Assistant, Sur La Table | 1 | Consistent with round 1 |
+| helping people buy and sell homes | Community Manager, affordable housing (property management) | 0 | Property management excluded |

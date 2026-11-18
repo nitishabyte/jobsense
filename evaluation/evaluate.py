@@ -4,7 +4,7 @@ Step 5b: score every system against your labels.
 Metrics
   precision@5 : of the 5 jobs shown, what fraction are relevant? (fewer than 5 results -> missing slots count as misses)
   MRR@5       : 1 / rank of the first relevant job (1.0 = top result relevant, 0 = none in the top 5)
-  latency     : median time to answer one query (ranking only, no database lookup), over several repeats
+  latency     : median time to answer one query (ranking, plus the DB lookup the re-ranker needs), over several repeats
 
 Usage (from the repo root):
     python -m evaluation.evaluate
@@ -12,6 +12,8 @@ Usage (from the repo root):
 import json
 import statistics
 import time
+from itertools import combinations
+from math import comb
 from pathlib import Path
 
 from evaluation.systems import load_systems
@@ -32,6 +34,16 @@ def mrr_at_k(rels: list[int], k: int = K) -> float:
         if r:
             return 1 / rank
     return 0.0
+
+
+def sign_test_p(wins: int, losses: int) -> float:
+    """Two-sided sign test: if both systems were equally good, how likely is a win/loss split at least this uneven?
+    Ties are ignored. Small p (< 0.05) = unlikely to be luck."""
+    n = wins + losses
+    if n == 0:
+        return 1.0
+    tail = sum(comb(n, i) for i in range(max(wins, losses), n + 1)) / 2 ** n
+    return min(1.0, 2 * tail)
 
 
 def mean(xs) -> float:
@@ -94,13 +106,13 @@ def main() -> None:
     for q in queries:
         lines.append(f"| {q['query']} | {q['type']} | " + " | ".join(f"{per_query[n][q['id']][0]:.1f}" for n in names) + " |")
 
-    # ---------- Head-to-head: each system vs the first one (the baseline) ----------
-    base = names[0]
+    # ---------- Head-to-head for every pair of systems, with a sign test ----------
     lines.append("")
-    for n in names[1:]:
-        wins = sum(per_query[n][q["id"]][0] > per_query[base][q["id"]][0] for q in queries)
-        losses = sum(per_query[n][q["id"]][0] < per_query[base][q["id"]][0] for q in queries)
-        lines.append(f"{n} vs {base}: better on {wins} queries, worse on {losses}, tied on {len(queries) - wins - losses}.")
+    for a, b in combinations(names, 2):
+        wins = sum(per_query[b][q["id"]][0] > per_query[a][q["id"]][0] for q in queries)
+        losses = sum(per_query[b][q["id"]][0] < per_query[a][q["id"]][0] for q in queries)
+        lines.append(f"{b} vs {a}: better on {wins} queries, worse on {losses}, tied on {len(queries) - wins - losses} "
+                     f"(sign test p = {sign_test_p(wins, losses):.2f})")
 
     report = "\n".join(lines)
     print(report)

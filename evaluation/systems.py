@@ -1,6 +1,6 @@
 """
 The search systems we compare. Each one has a `name` and a `search(query, k) -> [job_id, ...]` method,
-so labeling and evaluation treat them all the same way. Step 6 adds its system to SYSTEMS here.
+so labeling and evaluation treat them all the same way. The first system listed is the baseline.
 """
 import re
 
@@ -9,6 +9,7 @@ from rank_bm25 import BM25Okapi
 
 from app import db, vector_index
 from app.embedding import encode
+from app.reranker import rerank, rerank_text
 
 TOKEN = re.compile(r"[a-z0-9]+")
 STOPWORDS = set(
@@ -48,6 +49,23 @@ class EmbeddingSearch:
         return [job_id for job_id, _ in vector_index.search(self.index, encode([query]), k)]
 
 
+class EmbeddingRerank:
+    """Step 6: take the embedding search's top candidates, re-order them with the cross-encoder."""
+    name = "embedding+rerank"
+
+    def __init__(self, embedding: EmbeddingSearch, conn, candidates: int = 20):
+        self.embedding = embedding
+        self.conn = conn
+        self.candidates = candidates  # re-ranking can only re-order what stage 1 found: more = better recall, slower
+
+    def search(self, query: str, k: int) -> list[int]:
+        ids = self.embedding.search(query, self.candidates)
+        jobs = db.fetch_jobs(self.conn, ids)
+        ranked = rerank(query, [(i, rerank_text(jobs[i]["title"], jobs[i]["description"])) for i in ids])
+        return [job_id for job_id, _ in ranked[:k]]
+
+
 def load_systems() -> list:
     conn = db.connect()
-    return [BM25Search(conn), EmbeddingSearch()]
+    embedding = EmbeddingSearch()
+    return [BM25Search(conn), embedding, EmbeddingRerank(embedding, conn)]
